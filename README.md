@@ -1,0 +1,6 @@
+# Optimization of PySpark Query
+
+The PySpark code generates two dataframes from two parquet files located in the data folder, i.e., questions and answers.  Using the two dataframes, the code will work to match the questions with a corresponding answer. A simple join can be performed in this situation, using **question_id**. However, this operation is computationally expensive, as there is an inevitable shuffle. Thus, the goal is to determine the options available for optimizing this query.
+
+1. Broadcast Join: One of the first observations is that there are more answers available than questions, with notable skewing for answers. Specifically, the number of rows for answers are 110714, whereas the number of rows for questions are 86936. To avoid retrieving data from different partitions, broadcast will retain the data in-memory.  In this situation, it is ideal to broadcast the answers when joining with the questions. However, for Spark versions above 2.4, this feature is automatically applied, leaving open other possibilities for optimization.
+2. Repartitioning: To help with the skewing of the answers dataframe, the dataframe can be repartitioned, with the number of ideal partitions being carefully tuned. In this specific scenario, it was determined that repartitioning the answers dataframe into 8 partitions significantly decreased the query time.
